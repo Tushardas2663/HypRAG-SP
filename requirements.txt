@@ -151,7 +151,7 @@ spacy-loggers==1.0.5
 srsly==2.4.8
 sympy==1.13.3
 tabulate==0.9.0
-thinc==8.1.12
+thinc
 threadpoolctl==3.5.0
 tiktoken==0.8.0
 timm==1.0.9
