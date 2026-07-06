@@ -12,7 +12,10 @@ from rand_state import RandContext
 
 
 def compute_logits(x, y, logit_scale, manifold=None, distance=None):
-    if manifold is None or distance == 'euclidean':
+    if getattr(manifold, 'name', None) == 'spline':
+        # We return negative distance because CrossEntropy maximizes the logits (similarity)
+        sim_logits = - manifold.pairwise_spline_dist(x, y)
+    elif manifold is None or distance == 'euclidean':
         sim_logits = torch.matmul(x, y.T)
     elif distance == 'squared_lorentz':
         sim_logits = - manifold.pairwise_squared_dist(x, y)

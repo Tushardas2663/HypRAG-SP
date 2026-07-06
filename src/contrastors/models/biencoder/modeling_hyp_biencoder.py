@@ -414,9 +414,9 @@ class HypBiEncoder(PreTrainedModel):
         with context():
             trunk_output = self.trunk(input_ids, attention_mask=attention_mask, **kwargs)
 
-        #manifold = self.trunk.manifold
-        manifold = getattr(self.trunk, 'manifold', None)
+        manifold = self.manifold 
 
+        
         embedding = trunk_output.pooler_output
         embedding = self.proj(embedding)
 
