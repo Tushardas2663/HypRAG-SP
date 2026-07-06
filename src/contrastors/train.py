@@ -1,3 +1,9 @@
+import sys
+from types import ModuleType
+sys.modules['torchaudio'] = ModuleType('torchaudio')
+sys.modules['torchvision'] = ModuleType('torchvision')
+
+
 import logging
 import os
 import fire
