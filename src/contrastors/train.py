@@ -2,27 +2,36 @@ import sys
 import importlib.machinery
 from types import ModuleType
 
-# 1. Register base and sub-modules in sys.modules
-for lib in ['torchaudio', 'torchvision', 'torchvision.io']:
-    mod = ModuleType(lib)
-    mod.__path__ = []
-    mod.__spec__ = importlib.machinery.ModuleSpec(lib, None)
-    sys.modules[lib] = mod
+# A smart, flexible mock that returns a dummy for any attribute or sub-enum accessed
+class UniversalMock(ModuleType):
+    def __init__(self, name):
+        super().__init__(name)
+        self.__path__ = []
+        self.__spec__ = importlib.machinery.ModuleSpec(name, None)
+    
+    def __getattr__(self, item):
+        # Handle enums smoothly (e.g., InterpolationMode.BILINEAR or ImageReadMode.RGB)
+        if item in ['InterpolationMode', 'ImageReadMode']:
+            class DummyEnum:
+                def __getattr__(self, attr): return 1
+            return DummyEnum()
+        
+        # Default to a safe, callable dummy function for methods like decode_image
+        return lambda *args, **kwargs: None
 
-# 2. Populate torchvision.io with the specific attributes transformers demands
-class DummyImageReadMode:
-    UNCHANGED = 0
-    GRAY = 1
-    GRAY_ALPHA = 2
-    RGB = 3
-    RGB_ALPHA = 4
+# Pre-register all standard sub-modules that transformers checks during boot
+mock_targets = [
+    'torchvision', 
+    'torchvision.io', 
+    'torchvision.transforms', 
+    'torchvision.transforms.functional',
+    'torchvision.ops', 
+    'torchaudio', 
+    'torchaudio.transforms'
+]
 
-sys.modules['torchvision.io'].ImageReadMode = DummyImageReadMode
-sys.modules['torchvision.io'].decode_image = lambda *args, **kwargs: None
-
-# 3. Bind the sub-module back to the parent module object
-sys.modules['torchvision'].io = sys.modules['torchvision.io']
-sys.modules['torchvision'].transforms=DummyImageReadMode
+for target in mock_targets:
+    sys.modules[target] = UniversalMock(target)
 
 
 import logging
