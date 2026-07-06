@@ -7,7 +7,7 @@ from functools import partial
 import numpy as np
 import torch
 import torch.nn as nn
-import hyplib.nn as hnn
+#import hyplib.nn as hnn
 import torch.nn.functional as F
 #from flash_attn.bert_padding import pad_input, unpad_input
 # from flash_attn.ops.rms_norm import RMSNorm
