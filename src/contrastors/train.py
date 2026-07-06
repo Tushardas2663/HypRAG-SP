@@ -10,6 +10,10 @@ class UniversalMock(ModuleType):
         self.__spec__ = importlib.machinery.ModuleSpec(name, None)
     
     def __getattr__(self, item):
+        # THE FIX: Let Python handle its own internal double-underscore variables normally
+        if item.startswith('__') and item.endswith('__'):
+            raise AttributeError(item)
+            
         # Handle enums smoothly (e.g., InterpolationMode.BILINEAR or ImageReadMode.RGB)
         if item in ['InterpolationMode', 'ImageReadMode']:
             class DummyEnum:
@@ -32,7 +36,6 @@ mock_targets = [
 
 for target in mock_targets:
     sys.modules[target] = UniversalMock(target)
-
 
 import logging
 import os
