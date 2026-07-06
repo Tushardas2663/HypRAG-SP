@@ -73,13 +73,20 @@ def clip_loss(
     similarity_query_document = compute_logits(query, document, logit_scale, manifold=manifold, distance=distance)
 
     num_logits = similarity_query_document.size(0)
-    rank = dist.get_rank() if dist.is_initialized() else 0
+    try:
+        rank = dist.get_rank()
+        world_size = dist.get_world_size()
+    except Exception:
+        # If DDP is not fully initialized (like on a single Kaggle GPU), default to 1 node.
+        rank = 0
+        world_size = 1
+    #rank = dist.get_rank() if dist.is_initialized() else 0
     # calculate sub-batch labels
     labels = labels + rank * num_logits
 
     # if training with negatives
     # multiply by world size since we only gather the document embeddings
-    world_size = dist.get_world_size() if dist.is_initialized() else 1
+    #world_size = dist.get_world_size() if dist.is_initialized() else 1
     labels = labels * (document.size(0) // (query.size(0) * world_size))
 
     if bidirectional:
