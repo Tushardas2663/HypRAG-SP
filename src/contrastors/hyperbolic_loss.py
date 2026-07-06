@@ -79,7 +79,8 @@ def clip_loss(
 
     # if training with negatives
     # multiply by world size since we only gather the document embeddings
-    labels = labels * (document.size(0) // (query.size(0) * dist.get_world_size()))
+    world_size = dist.get_world_size() if dist.is_initialized() else 1
+    labels = labels * (document.size(0) // (query.size(0) * world_size))
 
     if bidirectional:
         similarity_document_query = compute_logits(document, query, logit_scale, manifold=manifold, distance=distance)
