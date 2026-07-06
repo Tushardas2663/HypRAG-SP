@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 import hyplib.nn as hnn
 import torch.nn.functional as F
-from flash_attn.bert_padding import pad_input, unpad_input
+#from flash_attn.bert_padding import pad_input, unpad_input
 # from flash_attn.ops.rms_norm import RMSNorm
 from torch.nn import RMSNorm
 from transformers import AutoConfig, AutoModel, AutoTokenizer, PreTrainedModel
