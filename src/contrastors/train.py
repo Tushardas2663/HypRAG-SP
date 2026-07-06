@@ -1,7 +1,13 @@
 import sys
+import importlib.machinery
 from types import ModuleType
-sys.modules['torchaudio'] = ModuleType('torchaudio')
-sys.modules['torchvision'] = ModuleType('torchvision')
+
+# The Upgraded Blindfold (Python 3.12 Safe)
+for lib in ['torchaudio', 'torchvision']:
+    mod = ModuleType(lib)
+    mod.__path__ = []
+    mod.__spec__ = importlib.machinery.ModuleSpec(lib, None)
+    sys.modules[lib] = mod
 
 
 import logging
