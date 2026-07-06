@@ -1,8 +1,7 @@
-import sys
+mport sys
 import importlib.machinery
 from types import ModuleType
 
-# A smart, flexible mock that returns a dummy for any attribute or sub-enum accessed
 class UniversalMock(ModuleType):
     def __init__(self, name):
         super().__init__(name)
@@ -10,32 +9,32 @@ class UniversalMock(ModuleType):
         self.__spec__ = importlib.machinery.ModuleSpec(name, None)
     
     def __getattr__(self, item):
-        # THE FIX: Let Python handle its own internal double-underscore variables normally
+        # 1. Protect internal Python dunders
         if item.startswith('__') and item.endswith('__'):
             raise AttributeError(item)
             
-        # Handle enums smoothly (e.g., InterpolationMode.BILINEAR or ImageReadMode.RGB)
+        # 2. Handle specific Enums for vision
         if item in ['InterpolationMode', 'ImageReadMode']:
             class DummyEnum:
                 def __getattr__(self, attr): return 1
             return DummyEnum()
+            
+        # 3. Handle Flash Attention specific tensor unpacking
+        if item == 'unpad_input':
+            return lambda *args, **kwargs: (args[0], None, None, None)
+        if item == 'pad_input':
+            return lambda *args, **kwargs: args[0]
         
-        # Default to a safe, callable dummy function for methods like decode_image
+        # 4. Safe fallback for everything else
         return lambda *args, **kwargs: None
 
-# Pre-register all standard sub-modules that transformers checks during boot
+# Pre-register ALL problematic C++ dependencies
 mock_targets = [
-    'torchvision', 
-    'torchvision.io', 
-    'torchvision.transforms', 
-    'torchvision.transforms.functional',
-    'torchvision.ops', 
-    'torchaudio', 
-    'torchaudio.transforms'
+    'torchvision', 'torchvision.io', 'torchvision.transforms', 'torchvision.transforms.functional', 'torchvision.ops',
+    'torchaudio', 'torchaudio.transforms',
+    'flash_attn', 'flash_attn.ops', 'flash_attn.bert_padding', 'flash_attn.layers', 'flash_attn.layers.rotary',
+    'megablocks', 'megablocks.layers', 'megablocks.layers.arguments', 'megablocks.layers.dmoe', 'megablocks.layers.glu', 'megablocks.layers.moe'
 ]
-
-for target in mock_targets:
-    sys.modules[target] = UniversalMock(target)
 
 import logging
 import os
