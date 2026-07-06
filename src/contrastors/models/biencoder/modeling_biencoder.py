@@ -5,7 +5,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from flash_attn.bert_padding import pad_input, unpad_input
+#from flash_attn.bert_padding import pad_input, unpad_input
 # from flash_attn.ops.rms_norm import RMSNorm
 from transformers import AutoConfig, AutoModel, AutoTokenizer, PreTrainedModel
 
