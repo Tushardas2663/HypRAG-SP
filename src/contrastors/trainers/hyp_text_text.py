@@ -9,8 +9,8 @@ import deepspeed
 from torch.utils.data import DataLoader
 from torch import Tensor
 from numpy import ndarray
-import hyplib.nn as hnn
-from hyplib.manifolds import Lorentz
+#import hyplib.nn as hnn
+#from hyplib.manifolds import Lorentz
 
 from dataset.text_text_loader import StreamingShardDataset, collate_fn, get_local_dataloader
 from distributed import gather_with_grad, print_in_order
@@ -140,6 +140,10 @@ class HypSentenceTransformer(SentenceTransformer):
         elif distance == 'euclidean':
             self.similarity_fn = cos_sim
             self.similarity_pairwise_fn = cos_sim
+
+        elif distance == 'spline':
+            self.similarity_fn = convert_distance_to_similarity_function(manifold.pairwise_spline_dist)
+            self.similarity_pairwise_fn = convert_distance_to_similarity_function(manifold.pairwise_spline_dist)
         else:
             raise ValueError(f"Distance {distance} not supported")
 
