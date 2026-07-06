@@ -22,6 +22,7 @@ sys.modules['torchvision.io'].decode_image = lambda *args, **kwargs: None
 
 # 3. Bind the sub-module back to the parent module object
 sys.modules['torchvision'].io = sys.modules['torchvision.io']
+sys.modules['torchvision'].transforms=DummyImageReadMode
 
 
 import logging
