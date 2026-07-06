@@ -2,12 +2,26 @@ import sys
 import importlib.machinery
 from types import ModuleType
 
-# The Upgraded Blindfold (Python 3.12 Safe)
-for lib in ['torchaudio', 'torchvision']:
+# 1. Register base and sub-modules in sys.modules
+for lib in ['torchaudio', 'torchvision', 'torchvision.io']:
     mod = ModuleType(lib)
     mod.__path__ = []
     mod.__spec__ = importlib.machinery.ModuleSpec(lib, None)
     sys.modules[lib] = mod
+
+# 2. Populate torchvision.io with the specific attributes transformers demands
+class DummyImageReadMode:
+    UNCHANGED = 0
+    GRAY = 1
+    GRAY_ALPHA = 2
+    RGB = 3
+    RGB_ALPHA = 4
+
+sys.modules['torchvision.io'].ImageReadMode = DummyImageReadMode
+sys.modules['torchvision.io'].decode_image = lambda *args, **kwargs: None
+
+# 3. Bind the sub-module back to the parent module object
+sys.modules['torchvision'].io = sys.modules['torchvision.io']
 
 
 import logging
