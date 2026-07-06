@@ -355,7 +355,11 @@ class HypBiEncoder(PreTrainedModel):
                         assign=True,
                     )
         else:
-            raise ValueError(f"Model type {config.model_type} not supported")
+            #raise ValueError(f"Model type {config.model_type} not supported")
+            print(f"Loading standard HF model: {config.model_name}")
+            self.trunk = AutoModel.from_pretrained(config.model_name, trust_remote_code=True)
+            # Standard models don't have a hyperbolic manifold by default
+            self.trunk.manifold = None
 
         if config.freeze:
             self.trunk.eval()
@@ -410,7 +414,8 @@ class HypBiEncoder(PreTrainedModel):
         with context():
             trunk_output = self.trunk(input_ids, attention_mask=attention_mask, **kwargs)
 
-        manifold = self.trunk.manifold
+        #manifold = self.trunk.manifold
+        manifold = getattr(self.trunk, 'manifold', None)
 
         embedding = trunk_output.pooler_output
         embedding = self.proj(embedding)
